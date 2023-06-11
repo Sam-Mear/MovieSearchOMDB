@@ -38,8 +38,16 @@ import MovieDetails from './MovieDetails';
 
 export const MovieSearch = () => {
   const [movieData, setMovieData] = useState(null);
+  const [localData, setLocalData] = useState(null);
   const [searchData, setSearchData] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('localData');
+    if (storedData) {
+      setLocalData(JSON.parse(storedData));
+    }
+  }, []);
 
   const fetchMovieDataTitle = async () => {
     try {
@@ -58,9 +66,16 @@ export const MovieSearch = () => {
     try {
       const response = await fetch(`http://www.omdbapi.com/?s=${searchTerm}&apikey=${process.env.REACT_APP_OMDB_KEY}`);
       // TODO : Needs to check if it successfully return an error before setting the search data.
-      // IT also needs remove the unnecessary results (games ect) before it sets the data.
       const data = await response.json();
-      setSearchData(data);
+      const filteredData = data.Search.filter(item => item.Type === 'movie');
+      setSearchData(filteredData);
+      // Storing the data locally in localStorage
+      // TODO: will add the data no matter what, even if its already stored...  
+      // local data will only update on the search after for whatever reason.
+      //console.info(localData)
+      setLocalData(localData ? localData.concat(filteredData) : filteredData)
+      //console.info(localData)
+      localStorage.setItem('localData', JSON.stringify(localData));
     } catch (error) {
       console.error('Error fetching movie data:', error);
     }
@@ -92,7 +107,7 @@ export const MovieSearch = () => {
           )}
         </Card>
         {searchData &&
-          searchData.Search.map((data) => (
+          searchData.map((data) => (
             <Card minW='20%' flexGrow='999' maxW='50%'>
               <MovieDetails movieData={data} />
             </Card>
