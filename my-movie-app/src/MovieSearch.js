@@ -67,14 +67,20 @@ export const MovieSearch = () => {
       const response = await fetch(`http://www.omdbapi.com/?s=${searchTerm}&apikey=${process.env.REACT_APP_OMDB_KEY}`);
       // TODO : Needs to check if it successfully return an error before setting the search data.
       const data = await response.json();
-      const filteredData = data.Search.filter(item => item.Type === 'movie');
+      let filteredData = data.Search.filter(item => item.Type === 'movie');
       setSearchData(filteredData);
       // Storing the data locally in localStorage
-      // TODO: will add the data no matter what, even if its already stored...  
-      // local data will only update on the search after for whatever reason.
-      //console.info(localData)
+      // TODO: local data will only update on the search after for whatever reason.
+      if (localData != null) {
+        localData.forEach(localMovie => {
+          filteredData.forEach(searchMovie => {
+            if (localMovie.imdbID === searchMovie.imdbID) {
+              filteredData = filteredData.filter(movie => movie.imdbID !== searchMovie.imdbID);
+            }
+          });
+        });
+      }
       setLocalData(localData ? localData.concat(filteredData) : filteredData)
-      //console.info(localData)
       localStorage.setItem('localData', JSON.stringify(localData));
     } catch (error) {
       console.error('Error fetching movie data:', error);
