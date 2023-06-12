@@ -37,6 +37,7 @@ export const MovieSearch = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false); // Track modal state
   const [modalMovieData, setModalMovieData] = useState(null); // Track data for the modal
+  const [localSearchOnly, setLocalSearchOnly] = useState(false);
 
   useEffect(() => {
     const storedData = localStorage.getItem('localData');
@@ -92,7 +93,15 @@ export const MovieSearch = () => {
     fetchMovieDataTitle();
   };
   const handleSearch = () => {
-    fetchMovieData();
+    if (localSearchOnly){
+      const localData = JSON.parse(localStorage.getItem('localDetailedData')) || [];
+      const results = localData.filter((item) =>
+        item.Title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSearchData(results)
+    }else{
+      fetchMovieData();
+    }
   };
 
   /**
@@ -138,6 +147,14 @@ export const MovieSearch = () => {
     setIsModalOpen(false); // Close the modal
   };
 
+  /**
+   * will set localSearchOnly accordingly if the checkbox in MovieSearchInput is clicked.
+   * @param {*} isChecked 
+   */
+  const handleCheckboxChange = (isChecked) => {
+    setLocalSearchOnly(isChecked);
+  };
+
 
   return (
     <>
@@ -148,6 +165,7 @@ export const MovieSearch = () => {
           onSearchTermChange={(e) => setSearchTerm(e.target.value)}
           onSearchTitle={handleSearchTitle}
           onSearch={handleSearch}
+          onCheckboxChange={handleCheckboxChange}
         />
       </Box>
       <Flex wrap='wrap' gap='5px'>
