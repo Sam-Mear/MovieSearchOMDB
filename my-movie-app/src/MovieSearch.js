@@ -70,7 +70,6 @@ export const MovieSearch = () => {
       let filteredData = data.Search.filter(item => item.Type === 'movie');
       setSearchData(filteredData);
       // Storing the data locally in localStorage
-      // TODO: local data will only update on the search after for whatever reason.
       if (localData != null) {
         localData.forEach(localMovie => {
           filteredData.forEach(searchMovie => {
@@ -80,8 +79,10 @@ export const MovieSearch = () => {
           });
         });
       }
-      setLocalData(localData ? localData.concat(filteredData) : filteredData)
-      localStorage.setItem('localData', JSON.stringify(localData));
+      //storing it in a temp variable fixes the local storage not being updated until the search after for whatever reason.
+      const temp = localData ? localData.concat(filteredData) : filteredData
+      setLocalData(temp)
+      localStorage.setItem('localData', JSON.stringify(temp));
     } catch (error) {
       console.error('Error fetching movie data:', error);
     }
@@ -99,18 +100,34 @@ export const MovieSearch = () => {
    * @param {*} imdbID 
    */
   const handleCardClick = async imdbID => {
-    try {
-      const response = await fetch(
-        `http://www.omdbapi.com/?i=${imdbID}&apikey=${process.env.REACT_APP_OMDB_KEY}`
-      );
-      const data = await response.json();
-      // Handle the retrieved detailed movie data
-      setLocalDetailedData(data);
-      localStorage.setItem('localDetailedData', JSON.stringify(data));
-      setModalMovieData(data); // Store the detailed movie data for the modal
-      setIsModalOpen(true); // Open the modal
-    } catch (error) {
-      console.error('Error fetching detailed movie data:', error);
+    //Check if its already in memory
+    const localData = JSON.parse(localStorage.getItem('localDetailedData')) || [];
+    let foundInMemory = false;
+    for (const element of localData) {
+      if (imdbID === element.imdbID) {
+        setModalMovieData(element); // Store the detailed movie data for the modal
+        setIsModalOpen(true); // Open the modal
+        console.info("FOUND IN MEMORY!")
+        foundInMemory = true;
+        break;
+      }
+    }
+    if (!foundInMemory) {
+      //Its not in local storage, so must be fetched from API
+      try {
+        const response = await fetch(
+          `http://www.omdbapi.com/?i=${imdbID}&apikey=${process.env.REACT_APP_OMDB_KEY}`
+        );
+        const data = await response.json();
+        // Handle the retrieved detailed movie data
+        const updatedLocalData = [...localData, data];
+        setLocalDetailedData(updatedLocalData)
+        localStorage.setItem('localDetailedData', JSON.stringify(updatedLocalData));
+        setModalMovieData(data); // Store the detailed movie data for the modal
+        setIsModalOpen(true); // Open the modal
+      } catch (error) {
+        console.error('Error fetching detailed movie data:', error);
+      }
     }
   };
 
