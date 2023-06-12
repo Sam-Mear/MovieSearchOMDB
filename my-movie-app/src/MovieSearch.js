@@ -1,22 +1,8 @@
 /**
  * 
- * Autocomplete not sure how to do. Plan is to store the movies locally first, then 
- * do the autocomplete on the locally stored data.
- * If user typed: lord, and in local data the lord of the rings was there, it would show up.
- * 
- * For stored data:
- * useEffect(() => {
-    const storedData = localStorage.getItem('movieData');
-    if (storedData) {
-      setMovieData(JSON.parse(storedData));
-    }
-  }, []);
- * the useEffect hook is used to check if there is any previously stored movie data in localStorage. 
- * If there is, it retrieves the data and sets it as the initial value for movieData. 
- * This ensures that if the user has previously searched for a movie, the data will be loaded from localStorage
- * 
- * and to store it:
- * localStorage.setItem('movieData', JSON.stringify(data));
+ * Make more components, so its easier to split the results into 2 categories:
+ * 1. Local search - can have plot, ratings and detailed info
+ * 2. API search - If the movie isnt in local data.
  * 
  * Maybe each movie will be stored with a date, like a cache, so after 7 days it can be considered dead and would need to be updated.
  * 
@@ -30,7 +16,14 @@ import {
     Flex,
     Image,
     Text,
-    Box
+    Box,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalCloseButton,
+    Heading
   } from '@chakra-ui/react';
 import MovieSearchInput from './MovieSearchInput';
 import MovieDetails from './MovieDetails';
@@ -39,13 +32,20 @@ import MovieDetails from './MovieDetails';
 export const MovieSearch = () => {
   const [movieData, setMovieData] = useState(null);
   const [localData, setLocalData] = useState(null);
+  const [localDetailedData, setLocalDetailedData] = useState(null);
   const [searchData, setSearchData] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false); // Track modal state
+  const [modalMovieData, setModalMovieData] = useState(null); // Track data for the modal
 
   useEffect(() => {
     const storedData = localStorage.getItem('localData');
     if (storedData) {
       setLocalData(JSON.parse(storedData));
+    }
+    const storedDetailedData = localStorage.getItem('localDetailedData');
+    if (storedDetailedData) {
+      setLocalData(JSON.parse(storedDetailedData));
     }
   }, []);
 
@@ -94,7 +94,36 @@ export const MovieSearch = () => {
     fetchMovieData();
   };
 
+  /**
+   * Handles a search result click.
+   * @param {*} imdbID 
+   */
+  const handleCardClick = async imdbID => {
+    try {
+      const response = await fetch(
+        `http://www.omdbapi.com/?i=${imdbID}&apikey=${process.env.REACT_APP_OMDB_KEY}`
+      );
+      const data = await response.json();
+      // Handle the retrieved detailed movie data
+      setLocalDetailedData(data);
+      localStorage.setItem('localDetailedData', JSON.stringify(data));
+      setModalMovieData(data); // Store the detailed movie data for the modal
+      setIsModalOpen(true); // Open the modal
+    } catch (error) {
+      console.error('Error fetching detailed movie data:', error);
+    }
+  };
+
+  /**
+   * Closes modal when exit button is clicked.
+   */
+  const handleCloseModal = () => {
+    setIsModalOpen(false); // Close the modal
+  };
+
+
   return (
+    <>
     <Flex>
       <Box>
         <MovieSearchInput
@@ -114,12 +143,34 @@ export const MovieSearch = () => {
         </Card>
         {searchData &&
           searchData.map((data) => (
-            <Card minW='20%' flexGrow='999' maxW='50%'>
+            <Card minW='20%' flexGrow='999' maxW='50%' key={data.imdbID} onClick={() => handleCardClick(data.imdbID)}>
               <MovieDetails movieData={data} />
             </Card>
           ))
         }
       </Flex>
     </Flex>
+    <Modal isOpen={isModalOpen} onClose={handleCloseModal} size="xl">
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Movie Details</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          {modalMovieData ? (
+            <>
+              <Heading>{modalMovieData.Title}</Heading>
+              <Text>Year: {modalMovieData.Year}</Text>
+              <Text>Genre: {modalMovieData.Genre}</Text>
+              <Text>Director: {modalMovieData.Director}</Text>
+              <Text>Actors: {modalMovieData.Actors}</Text>
+              <Text>Plot: {modalMovieData.Plot}</Text>
+            </>
+          ) : (
+            <Text>Loading...</Text>
+          )}
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+    </>
   );
 };
