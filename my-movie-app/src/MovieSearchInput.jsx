@@ -17,7 +17,10 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
     const isChecked = e.target.checked;
     onCheckboxChange(isChecked); // Call the callback function with the checkbox state
   };
-  
+
+  const handleSuggestionClick = (suggestion) => {
+    onSearchTermChange({ target: { value: suggestion.Title } }); // Fill the search box with the selected text
+  };  
 
   return (
     <Flex direction='column' gap='5px'>
@@ -36,7 +39,9 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
       {autocompleteSuggestions.length > 0 && (
       <ul>
         {autocompleteSuggestions.map((suggestion) => (
-          <li key={suggestion.imdbID}>{suggestion.Title}</li>
+          <li key={suggestion.imdbID} onClick={() => handleSuggestionClick(suggestion)}>
+            {suggestion.Title}
+          </li>
         ))}
       </ul>
     )}
