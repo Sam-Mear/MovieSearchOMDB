@@ -1,5 +1,12 @@
 /**
  * 
+ * Last two more points:
+ * 1. The application should be able to filter the list by Genre.
+ * 2. When a suggestion is visible in the input, if the user presses 'Right' or
+ * 'Tab' key, the input value should autocomplete with the visible suggestion.
+ * 
+ * 2 might be difficult due to how ive implemented it.
+ * 
  * Make more components, so its easier to split the results into 2 categories:
  * 1. Local search - can have plot, ratings and detailed info
  * 2. API search - If the movie isnt in local data.
