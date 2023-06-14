@@ -159,11 +159,6 @@ export const MovieSearch = () => {
     
   };
 
-  useEffect(() => {
-    console.info(selectedGenres)
-  }, [selectedGenres]);
-
-
   return (
     <>
     <Flex>
