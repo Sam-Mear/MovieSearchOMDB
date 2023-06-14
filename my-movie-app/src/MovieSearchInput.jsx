@@ -12,8 +12,8 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
   localDetailedData.forEach((item) => {
     const itemGenres = item.Genre.split(',').map((genre) => genre.trim());
     itemGenres.forEach((genre) => genres.add(genre));
-    //console.info(genres)
   });
+
   const genresArray = Array.from(genres);
 
   const handleAutocomplete = (e) => {
@@ -33,6 +33,16 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
 
   const handleSuggestionClick = (suggestion) => {
     onSearchTermChange({ target: { value: suggestion.Title } }); // Fill the search box with the selected text
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'Tab') {
+      if (autocompleteSuggestions.length > 0) {
+        e.preventDefault();
+        const suggestion = autocompleteSuggestions[0];
+        onSearchTermChange({ target: { value: suggestion.Title } });
+      }
+    }
   };
 
   /**
@@ -63,13 +73,12 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
         value={searchTerm}
         onChange={onSearchTermChange}
         onInput={handleAutocomplete}
+        onKeyDown={handleKeyDown}
         placeholder="Enter movie title"
       />
       <Button onClick={onSearchTitle}>Search Title</Button>
       <Button onClick={onSearch}>Search</Button>
       <Checkbox onChange={handleCheckboxChange}>Local Search Only</Checkbox>
-      {//Need to do a genre filter if local search is on...
-      }
       <ul>
         {localSearchOnly ? (
           genresArray.map((genre) => (
