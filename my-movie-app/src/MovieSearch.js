@@ -1,11 +1,5 @@
 /**
  * 
- * Last two more points:
- * 1. The application should be able to filter the list by Genre.
- * 2. When a suggestion is visible in the input, if the user presses 'Right' or
- * 'Tab' key, the input value should autocomplete with the visible suggestion.
- * 
- * 2 might be difficult due to how ive implemented it.
  * 
  * Make more components, so its easier to split the results into 2 categories:
  * 1. Local search - can have plot, ratings and detailed info
@@ -18,19 +12,16 @@
 import React, { useEffect, useState } from 'react';
 import {
   Card,
-    CardHeader,
-    ChakraProvider,
-    Flex,
-    Image,
-    Text,
-    Box,
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalCloseButton,
-    Heading
+  Flex,
+  Text,
+  Box,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Heading
   } from '@chakra-ui/react';
 import MovieSearchInput from './MovieSearchInput';
 import MovieDetails from './MovieDetails';
