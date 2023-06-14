@@ -45,6 +45,7 @@ export const MovieSearch = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Track modal state
   const [modalMovieData, setModalMovieData] = useState(null); // Track data for the modal
   const [localSearchOnly, setLocalSearchOnly] = useState(false);
+  const [selectedGenres, setSelectedGenres] = useState([]);
 
   useEffect(() => {
     const storedData = localStorage.getItem('localData');
@@ -162,6 +163,15 @@ export const MovieSearch = () => {
     setLocalSearchOnly(isChecked);
   };
 
+  const handleSelectedGenresChange = (genres) => {
+    setSelectedGenres(genres);
+    
+  };
+
+  useEffect(() => {
+    console.info(selectedGenres)
+  }, [selectedGenres]);
+
 
   return (
     <>
@@ -173,6 +183,7 @@ export const MovieSearch = () => {
           onSearchTitle={handleSearchTitle}
           onSearch={handleSearch}
           onCheckboxChange={handleCheckboxChange}
+          onSelectedGenresChange={handleSelectedGenresChange}
         />
       </Box>
       <Flex wrap='wrap' gap='5px'>
@@ -184,12 +195,25 @@ export const MovieSearch = () => {
           )}
         </Card>
         {searchData &&
-          searchData.map((data) => (
-            <Card minW='20%' flexGrow='999' maxW='50%' key={data.imdbID} onClick={() => handleCardClick(data.imdbID)}>
-              <MovieDetails movieData={data} />
-            </Card>
-          ))
-        }
+          searchData.map((data) => {
+            if (selectedGenres.length > 0 ) {
+              const itemGenres = data.Genre.split(',').map((genre) => genre.trim());
+              if (selectedGenres.some((element) => itemGenres.includes(element))){
+              return (
+                <Card minW='20%' flexGrow='999' maxW='50%' key={data.imdbID} onClick={() => handleCardClick(data.imdbID)}>
+                  <MovieDetails movieData={data} />
+                </Card>
+              );
+              }
+            } else if (selectedGenres.length === 0) {
+              return (
+                <Card minW='20%' flexGrow='999' maxW='50%' key={data.imdbID} onClick={() => handleCardClick(data.imdbID)}>
+                  <MovieDetails movieData={data} />
+                </Card>
+              );
+            }
+            return null;
+          })}
       </Flex>
     </Flex>
     <Modal isOpen={isModalOpen} onClose={handleCloseModal} size="xl">

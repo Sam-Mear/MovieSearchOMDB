@@ -1,7 +1,7 @@
 import { Button, Checkbox, Flex } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 
-const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSearch, onCheckboxChange }) => {
+const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSearch, onCheckboxChange, onSelectedGenresChange }) => {
   const localData = JSON.parse(localStorage.getItem('localData')) || [];
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
   const [localSearchOnly, setLocalSearchOnly] = useState(false);
@@ -50,8 +50,11 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
         prevSelectedGenres.filter((selectedGenre) => selectedGenre !== genre)
       );
     }
-    console.info(selectedGenres)
   };
+
+  useEffect(() => {
+    onSelectedGenresChange(selectedGenres);
+  }, [selectedGenres]);
 
   return (
     <Flex direction='column' gap='5px'>
