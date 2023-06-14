@@ -1,9 +1,20 @@
 import { Button, Checkbox, Flex } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 
-const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSearch, onCheckboxChange }) => {
+const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSearch, onCheckboxChange, onSelectedGenresChange }) => {
   const localData = JSON.parse(localStorage.getItem('localData')) || [];
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
+  const [localSearchOnly, setLocalSearchOnly] = useState(false);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const localDetailedData = JSON.parse(localStorage.getItem('localDetailedData')) || [];
+  const genres = new Set();
+
+  localDetailedData.forEach((item) => {
+    const itemGenres = item.Genre.split(',').map((genre) => genre.trim());
+    itemGenres.forEach((genre) => genres.add(genre));
+    //console.info(genres)
+  });
+  const genresArray = Array.from(genres);
 
   const handleAutocomplete = (e) => {
     const input = e.target.value;
@@ -15,12 +26,35 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
 
   const handleCheckboxChange = (e) => {
     const isChecked = e.target.checked;
+    setLocalSearchOnly(isChecked);
     onCheckboxChange(isChecked); // Call the callback function with the checkbox state
+    //TODO : set selectedgenres to empyty
   };
 
   const handleSuggestionClick = (suggestion) => {
     onSearchTermChange({ target: { value: suggestion.Title } }); // Fill the search box with the selected text
-  };  
+  };
+
+  /**
+   * 
+   * @param {*} e the event object
+   * @param {*} genre the genre associated with the checkbox
+   */
+  const handleGenreCheckboxChange = (e, genre) => {
+    const isChecked = e.target.checked;
+
+    if (isChecked) {
+      setSelectedGenres((prevSelectedGenres) => [...prevSelectedGenres, genre]);
+    } else {
+      setSelectedGenres((prevSelectedGenres) =>
+        prevSelectedGenres.filter((selectedGenre) => selectedGenre !== genre)
+      );
+    }
+  };
+
+  useEffect(() => {
+    onSelectedGenresChange(selectedGenres);
+  }, [selectedGenres]);
 
   return (
     <Flex direction='column' gap='5px'>
@@ -36,6 +70,18 @@ const MovieSearchInput = ({ searchTerm, onSearchTermChange, onSearchTitle, onSea
       <Checkbox onChange={handleCheckboxChange}>Local Search Only</Checkbox>
       {//Need to do a genre filter if local search is on...
       }
+      <ul>
+        {localSearchOnly ? (
+          genresArray.map((genre) => (
+            <li key={genre}>
+              <Checkbox onChange={(e) => handleGenreCheckboxChange(e, genre)}>
+                {genre}
+              </Checkbox>
+            </li>
+          )
+        )
+        ): (null)}
+      </ul>
       {autocompleteSuggestions.length > 0 && (
       <ul>
         {autocompleteSuggestions.map((suggestion) => (

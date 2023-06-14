@@ -1,5 +1,12 @@
 /**
  * 
+ * Last two more points:
+ * 1. The application should be able to filter the list by Genre.
+ * 2. When a suggestion is visible in the input, if the user presses 'Right' or
+ * 'Tab' key, the input value should autocomplete with the visible suggestion.
+ * 
+ * 2 might be difficult due to how ive implemented it.
+ * 
  * Make more components, so its easier to split the results into 2 categories:
  * 1. Local search - can have plot, ratings and detailed info
  * 2. API search - If the movie isnt in local data.
@@ -38,6 +45,7 @@ export const MovieSearch = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Track modal state
   const [modalMovieData, setModalMovieData] = useState(null); // Track data for the modal
   const [localSearchOnly, setLocalSearchOnly] = useState(false);
+  const [selectedGenres, setSelectedGenres] = useState([]);
 
   useEffect(() => {
     const storedData = localStorage.getItem('localData');
@@ -155,6 +163,15 @@ export const MovieSearch = () => {
     setLocalSearchOnly(isChecked);
   };
 
+  const handleSelectedGenresChange = (genres) => {
+    setSelectedGenres(genres);
+    
+  };
+
+  useEffect(() => {
+    console.info(selectedGenres)
+  }, [selectedGenres]);
+
 
   return (
     <>
@@ -166,6 +183,7 @@ export const MovieSearch = () => {
           onSearchTitle={handleSearchTitle}
           onSearch={handleSearch}
           onCheckboxChange={handleCheckboxChange}
+          onSelectedGenresChange={handleSelectedGenresChange}
         />
       </Box>
       <Flex wrap='wrap' gap='5px'>
@@ -177,12 +195,25 @@ export const MovieSearch = () => {
           )}
         </Card>
         {searchData &&
-          searchData.map((data) => (
-            <Card minW='20%' flexGrow='999' maxW='50%' key={data.imdbID} onClick={() => handleCardClick(data.imdbID)}>
-              <MovieDetails movieData={data} />
-            </Card>
-          ))
-        }
+          searchData.map((data) => {
+            if (selectedGenres.length > 0 ) {
+              const itemGenres = data.Genre.split(',').map((genre) => genre.trim());
+              if (selectedGenres.some((element) => itemGenres.includes(element))){
+              return (
+                <Card minW='20%' flexGrow='999' maxW='50%' key={data.imdbID} onClick={() => handleCardClick(data.imdbID)}>
+                  <MovieDetails movieData={data} />
+                </Card>
+              );
+              }
+            } else if (selectedGenres.length === 0) {
+              return (
+                <Card minW='20%' flexGrow='999' maxW='50%' key={data.imdbID} onClick={() => handleCardClick(data.imdbID)}>
+                  <MovieDetails movieData={data} />
+                </Card>
+              );
+            }
+            return null;
+          })}
       </Flex>
     </Flex>
     <Modal isOpen={isModalOpen} onClose={handleCloseModal} size="xl">
